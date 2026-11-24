@@ -133,7 +133,7 @@ def run(now, current, state, deliver=send):
             text = f'⚡ Підчерга 3.1 · {day}\n{title}\nВідключення: {describe(spans)}'
             if previous is not None:
                 text += f'\nРаніше: {describe(previous)}'
-            text += f'\nПеревірено: {now:%d.%m %H:%M} (Київ)\n{item["url"]}'
+            text += f'\nПеревірено: {now:%d.%m %H:%M}\n{item["url"]}'
             deliver(text)
             known[day] = spans
         for start, end in spans:
@@ -142,7 +142,7 @@ def run(now, current, state, deliver=send):
             key = f'{day}:{start}'
             if 0 < remaining <= 30 and key not in reminded:
                 deliver(f'⏰ Підчерга 3.1: відключення через ~{int(remaining)} хв.\n'
-                        f'{day} · {clock(start)}–{clock(end)} (Київ)\nЗа останнім перевіреним графіком.')
+                        f'{day} · {clock(start)}–{clock(end)}\nЗа останнім перевіреним графіком.')
                 reminded.append(key)
     cutoff = (now.date() - timedelta(days=2)).isoformat()
     state['days'] = {k: v for k, v in known.items() if k >= cutoff}

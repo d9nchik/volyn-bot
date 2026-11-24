@@ -1,0 +1,37 @@
+name: Check Volyn 3.1
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: volyn-schedule
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -r requirements.txt
+      - name: Test parser and notifications
+        run: python -m unittest discover -s tests -v
+      - uses: actions/cache/restore@v4
+        with:
+          path: .state
+          key: volyn-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: volyn-state-
+      - name: Check schedule and send changes
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python bot.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: .state
+          key: volyn-state-${{ github.run_id }}-${{ github.run_attempt }}
